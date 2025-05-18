@@ -1,16 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 import logging
 import os
 from trading_engine import TradingEngine
 from price_utils import get_asx_price
 from datetime import datetime
 import pytz
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Setup logging to a file
 logging.basicConfig(
-    filename='click_trader_log.txt',
+    filename=os.getenv('LOG_FILE', 'click_trader_log.txt'),
     level=logging.INFO,
     format='%(asctime)s %(levelname)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
@@ -32,11 +35,14 @@ def is_asx_open():
     return market_open <= sydney_time <= market_close
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///click_trader.db'
+
+# Configure the app
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///click_trader.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = os.urandom(24)  # Required for flash messages
+app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
+
+# Initialize extensions
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 # Initialize trading engine
 trading_engine = TradingEngine()
@@ -103,7 +109,7 @@ def index():
     portfolio_data = []
     for p in portfolios:
         current_price = get_asx_price(p.stock_symbol)
-        last_closed_price = get_asx_price(p.stock_symbol, use_last_closed=True)  # Get last closed price
+        last_closed_price = get_asx_price(p.stock_symbol, use_last_closed=True)
         price_change = None
         if current_price and p.purchase_price:
             price_change = ((current_price - p.purchase_price) / p.purchase_price) * 100
@@ -136,4 +142,4 @@ def get_price(symbol):
         return {'error': 'Price not found'}, 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true')
