@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Last 5 Days Closing Prices</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Latest Close</th>
+                    <th>5-Day Change</th>
+                    <th>Source</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stocks %}
+                <tr>
+                    <td>{{ stock.symbol }}</td>
+                    <td>{{ stock.price }}</td>
+                    <td>
+                        {% if stock.price != 'Unable to determine price' %}
+                            {% set price_change = stock.price_change %}
+                            {% if price_change > 0 %}
+                                <span class="text-success">+{{ "%.2f"|format(price_change) }}%</span>
+                            {% elif price_change < 0 %}
+                                <span class="text-danger">{{ "%.2f"|format(price_change) }}%</span>
+                            {% else %}
+                                <span>0.00%</span>
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ stock.source }}</td>
+                    <td>{{ stock.updated }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

@@ -5,3 +5,6 @@ yfinance==0.1.70
 ib_insync==0.9.70
 python-dotenv==1.0.1
 pytz==2023.3
+alpaca-trade-api==3.2.0
+websockets==10.4
+
