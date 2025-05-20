@@ -68,21 +68,27 @@
                 <div class="card-body">
                     <form method="POST" class="row g-3">
                         <div class="col-md-4">
-                            <label for="stock_symbol" class="form-label">Stock Symbol</label>
+                            <label for="stock_symbol" class="form-label">Select Stock</label>
                             <select class="form-select" id="stock_symbol" name="stock_symbol" required>
-                                <option value="">Select a stock...</option>
-                                {% for stock in asx_stocks %}
+                                <option value="">Select Stock</option>
+                                {% for stock in stocks %}
                                     <option value="{{ stock.symbol }}">{{ stock.symbol }} - {{ stock.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label for="quantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                            <label for="investment_amount" class="form-label">Investment Amount (AUD)</label>
+                            <input type="number" class="form-control" id="investment_amount" name="investment_amount" min="1" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary d-block w-100">Add to Portfolio</button>
+                        <div class="col-md-2">
+                            <label for="trade_type" class="form-label">&nbsp;</label>
+                            <select class="form-select" id="trade_type" name="trade_type">
+                                <option value="simulated" selected>Simulated</option>
+                                <option value="real" disabled style="color: #aaa;">Real Trading</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Add</button>
                         </div>
                     </form>
                 </div>

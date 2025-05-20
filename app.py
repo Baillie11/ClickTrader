@@ -392,7 +392,7 @@ def get_price(symbol):
 @app.route('/price-check')
 @login_required
 def price_check():
-    stocks = get_asx_stocks()
+    stocks = get_stocks_for_market('asx')  # Get ASX stocks
     stock_data = []
     
     for stock in stocks:
@@ -408,32 +408,27 @@ def price_check():
             'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
-        # Try Yahoo Finance first
         try:
+            # Get data for the stock using yfinance
             ticker = yf.Ticker(yahoo_symbol)
-            hist = ticker.history(period='5d')
+            hist = ticker.history(period="2d")  # Get last 2 days to ensure we have the last close
+            
             if not hist.empty:
-                latest_price = hist['Close'].iloc[-1]
-                oldest_price = hist['Close'].iloc[0]
-                price_change = ((latest_price - oldest_price) / oldest_price) * 100
+                # Get the last closing price (second last entry is the last *closed* price)
+                last_close = hist['Close'].iloc[-2]
+                # Get the previous day's close for price change calculation
+                prev_close = hist['Close'].iloc[-2]
+                current_price = hist['Close'].iloc[-1]
                 
-                price_info['price'] = f"${latest_price:.2f}"
+                # Calculate price change percentage
+                price_change = ((current_price - prev_close) / prev_close) * 100
+                
+                price_info['price'] = f"${current_price:.2f}"
                 price_info['price_change'] = price_change
                 price_info['source'] = 'Yahoo Finance'
-                stock_data.append(price_info)
-                continue
+                price_info['last_close'] = f"${last_close:.2f}"
         except Exception as e:
-            logging.warning(f"Yahoo Finance failed for {yahoo_symbol}: {str(e)}")
-        
-        # Try Alpaca if Yahoo Finance failed
-        if TRADING_PLATFORM == 'alpaca' and alpaca_engine and alpaca_engine.connected:
-            try:
-                alpaca_symbol = f"{symbol}.AX" if not symbol.endswith('.AX') else symbol
-                quote = alpaca_engine.api.get_latest_trade(alpaca_symbol)
-                price_info['price'] = f"${float(quote.price):.2f}"
-                price_info['source'] = 'Alpaca'
-            except Exception as e:
-                logging.warning(f"Alpaca failed for {symbol}: {str(e)}")
+            logging.warning(f"Error fetching price for {yahoo_symbol}: {str(e)}")
         
         stock_data.append(price_info)
     

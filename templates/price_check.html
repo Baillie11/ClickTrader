@@ -2,16 +2,18 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Last 5 Days Closing Prices</h2>
+    <h2>Stock Price Check</h2>
+    <p class="text-muted">Last updated: {{ stocks[0].updated if stocks else 'N/A' }}</p>
+    
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Symbol</th>
-                    <th>Latest Close</th>
-                    <th>5-Day Change</th>
+                    <th>Current Price</th>
+                    <th>Last Close</th>
+                    <th>Change</th>
                     <th>Source</th>
-                    <th>Last Updated</th>
                 </tr>
             </thead>
             <tbody>
@@ -19,22 +21,17 @@
                 <tr>
                     <td>{{ stock.symbol }}</td>
                     <td>{{ stock.price }}</td>
+                    <td>{{ stock.last_close if stock.last_close else 'N/A' }}</td>
                     <td>
-                        {% if stock.price != 'Unable to determine price' %}
-                            {% set price_change = stock.price_change %}
-                            {% if price_change > 0 %}
-                                <span class="text-success">+{{ "%.2f"|format(price_change) }}%</span>
-                            {% elif price_change < 0 %}
-                                <span class="text-danger">{{ "%.2f"|format(price_change) }}%</span>
-                            {% else %}
-                                <span>0.00%</span>
-                            {% endif %}
+                        {% if stock.price_change != 0 %}
+                            <span class="{% if stock.price_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ "%.2f"|format(stock.price_change) }}%
+                            </span>
                         {% else %}
-                            -
+                            N/A
                         {% endif %}
                     </td>
                     <td>{{ stock.source }}</td>
-                    <td>{{ stock.updated }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
